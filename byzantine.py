@@ -15,7 +15,7 @@ def omniscient_attack(v, f, factor):
         v[i] = byz_v
 
 def bitflip_attack(v, f, factor):
-    for i in range(100):
+    for i in range(500):
         b = bitflip.bitflip32(v[0][i].asscalar(), 22)
         b = bitflip.bitflip32(b, 29)
         b = bitflip.bitflip32(b, 30)

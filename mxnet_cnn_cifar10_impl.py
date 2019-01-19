@@ -131,7 +131,7 @@ with mx.gpu(args.gpu):
         softmax_cross_entropy = gluon.loss.SoftmaxCrossEntropyLoss()
 
         num_workers = args.nworkers
-        lr = args.lr / batch_size / num_workers
+        lr = args.lr / batch_size
 
         epochs = args.nepochs
         itr = 0
