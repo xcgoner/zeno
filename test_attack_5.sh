@@ -22,7 +22,7 @@ do
 
         > $logfile
 
-        stdbuf -o 0 python mxnet_cnn_cifar10_impl.py --gpu ${gpu} --nrepeats ${nrepeats} --nepochs 200 --lr 0.05 --batch_size 50 --nworkers 25 --nbyz 11 --byz_type signflip --byz_factor ${byzfactor} --byz_start ${byzstart} --aggregation ${aggr} | tee ${logfile}
+        python mxnet_cnn_cifar10_impl.py --gpu ${gpu} --nrepeats ${nrepeats} --nepochs 200 --lr 0.05 --batch_size 50 --nworkers 25 --nbyz 11 --byz_type signflip --byz_factor ${byzfactor} --byz_start ${byzstart} --aggregation ${aggr} | tee ${logfile}
     done
 done
 
