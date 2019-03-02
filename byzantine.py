@@ -18,7 +18,7 @@ def krum_attack(v, f, factor):
 
 def signflip_attack(v, f, factor):
     v_correct = v[f:]
-    byz_v = -factor * nd.sum(nd.concat(*v_correct, dim=1), axis=-1, keepdims=True)
+    byz_v = -factor * nd.mean(nd.concat(*v_correct, dim=1), axis=-1, keepdims=True)
     for i in range(f):
         v[i] = byz_v
 
