@@ -21,11 +21,8 @@ parser.add_argument("--nrepeats", help="rounds", type=int)
 parser.add_argument("--nbyz", help="# byzantines", type=int)
 parser.add_argument("--byz_type", help="type of failure", type=str)
 parser.add_argument("--byz_factor", help="factor of Byzantine", type=float)
+parser.add_argument("--byz_start", help="the first epoch to start attack", type=int, default=1)
 parser.add_argument("--aggregation", help="aggregation", type=str)
-parser.add_argument("--zeno_size", help="zeno batch size", type=int, default=4)
-parser.add_argument("--rho_ratio", help="ratio to learning rate", type=float)
-parser.add_argument("--b", help="b, number of trimmed values", type=int)
-parser.add_argument("--iid", help="iid data or not", type=int, default=1)
 parser.add_argument("--interval", help="log interval", type=int, default=5)
 args = parser.parse_args()
 
@@ -76,25 +73,7 @@ with mx.gpu(args.gpu):
         net.add(gluon.nn.Dropout(rate=0.25))
         net.add(gluon.nn.Dense(classes))
 
-    # byzantine
-    if args.byz_type == 'label':
-        byz = byzantine.no_byz
-    else:
-        if args.byz_type == 'omniscient':
-            byz = byzantine.omniscient_attack
-        elif args.byz_type == 'bitflip':
-            byz = byzantine.bitflip_attack
-        elif args.byz_type == 'signflip':
-            byz = byzantine.signflip_attack
-        else:
-            byz = byzantine.no_byz
-
-    zeno_batch_size = args.zeno_size
-
-    if args.iid == 1:
-        shuffle_data = True
-    else:
-        shuffle_data = False
+    shuffle_data = True
 
     # transform_cifar10 = transforms.Compose([
     #     # transforms.ToTensor(),
@@ -115,16 +94,12 @@ with mx.gpu(args.gpu):
         random.seed(roundi+1)
         np.random.seed(roundi+1)
 
-        train_data = mx.gluon.data.DataLoader(mx.gluon.data.vision.CIFAR10('/data/cx2', train=True, transform=transform),
+        train_data = mx.gluon.data.DataLoader(mx.gluon.data.vision.CIFAR10(train=True, transform=transform),
                                     batch_size, shuffle=shuffle_data, last_batch='discard')
-        val_train_data = mx.gluon.data.DataLoader(mx.gluon.data.vision.CIFAR10('/data/cx2', train=True, transform=transform),
+        val_train_data = mx.gluon.data.DataLoader(mx.gluon.data.vision.CIFAR10(train=True, transform=transform),
                                     batch_size, shuffle=False, last_batch='keep')
-        val_test_data = mx.gluon.data.DataLoader(mx.gluon.data.vision.CIFAR10('/data/cx2', train=False, transform=transform),
+        val_test_data = mx.gluon.data.DataLoader(mx.gluon.data.vision.CIFAR10(train=False, transform=transform),
                                     batch_size, shuffle=False, last_batch='keep')
-        zeno_data = mx.gluon.data.DataLoader(mx.gluon.data.vision.CIFAR10('/data/cx2', train=True, transform=transform),
-                                        zeno_batch_size, shuffle=True, last_batch='rollover')
-
-        zeno_iter = itertools.cycle(zeno_data)
             
         net.initialize(mx.init.Xavier(), ctx=ctx, force_reinit=True)
 
@@ -140,11 +115,18 @@ with mx.gpu(args.gpu):
         worker_idx = 0
         time_0 = time.time()
         for e in range(epochs):
+
+            # byzantine
+            if e < args.byz_start:
+                byz = byzantine.no_byz
+            else:
+                if args.byz_type == 'signflip':
+                    byz = byzantine.signflip_attack
+                else:
+                    byz = byzantine.no_byz
             
             tic = time.time()
             for i, (data, label) in enumerate(train_data):
-                if args.byz_type == 'label' and worker_idx < args.nbyz:
-                    label = 9 - label
                 with autograd.record():
                     output = net(data)
                     loss = softmax_cross_entropy(output, label)
@@ -164,6 +146,7 @@ with mx.gpu(args.gpu):
                 if itr % num_workers == 0:
                     # aggregate
                     nd.waitall()
+
                     worker_idx = 0
                     if args.aggregation == 'median':
                         nd_aggregation.marginal_median(grad_list, net, lr, args.nbyz, byz, args.byz_factor)
@@ -171,9 +154,6 @@ with mx.gpu(args.gpu):
                         nd_aggregation.krum(grad_list, net, lr, args.nbyz, byz, args.byz_factor)
                     elif args.aggregation == 'mean':
                         nd_aggregation.simple_mean(grad_list, net, lr, args.nbyz, byz, args.byz_factor)
-                    elif args.aggregation == 'zeno':
-                        zeno_sample = zeno_iter.next()
-                        nd_aggregation.zeno(grad_list, net, softmax_cross_entropy, lr, zeno_sample, args.rho_ratio, args.b, args.nbyz, byz, args.byz_factor)
                     else:
                         nd_aggregation.simple_mean(grad_list, net, lr, args.nbyz, byz, args.byz_factor)
 

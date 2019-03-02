@@ -5,31 +5,24 @@ from mxnet import nd
 def no_byz(v, f, factor):
     pass
 
-def gaussian_attack(v, f, factor):
-    for i in range(f):
-        v[i] = mx.nd.random.normal(0, 200, shape=v[i].shape)
-
-def omniscient_attack(v, f, factor):
-    byz_v = -1e10 * nd.sum(nd.concat(*v, dim=1), axis=-1)
+def median_attack(v, f, factor):
+    v_correct = v[f:]
+    byz_v = -100 * nd.sum(nd.concat(*v_correct, dim=1), axis=-1)
     for i in range(f):
         v[i] = byz_v
 
-def bitflip_attack(v, f, factor):
-    for i in range(500):
-        b = bitflip.bitflip32(v[0][i].asscalar(), 22)
-        b = bitflip.bitflip32(b, 29)
-        b = bitflip.bitflip32(b, 30)
-        b = bitflip.bitflip32(b, 31)
-        v[0][i] = b
+def krum_attack(v, f, factor):
+    v_correct = v[f:]
+    byz_v = -1 * nd.sum(nd.concat(*v_correct, dim=1), axis=-1)
     for i in range(f):
-        if i > 0:
-            v[i][:] = v[0]
+        v[i] = byz_v
 
 def signflip_attack(v, f, factor):
+    v_correct = v[f:]
+    byz_v = -factor * nd.sum(nd.concat(*v_correct, dim=1), axis=-1)
     for i in range(f):
-        if i > 0:
-            v[i][:] = -v[0]
-    v[0][:] = -v[0]
+        v[i] = byz_v
+
 
 # def bitflip_attack(v, f):
 #     for i in range(f):

@@ -38,8 +38,8 @@ def simple_mean(gradients, net, lr, f = 0, byz = no_byz, factor = 0):
             idx += param.data().size
 
 def score(gradient, v, f):
-    if 2*f+2 > v.shape[1]:
-        f = int(math.floor((v.shape[1]-2)/2.0))
+    if 2*f+2 >= v.shape[1]:
+        f = int(math.floor((v.shape[1]-3)/2.0))
     num_neighbours = v.shape[1] - 2 - f
     sorted_distance = nd.square(v - gradient).sum(axis=0).sort()
     return nd.sum(sorted_distance[1:(1+num_neighbours)]).asscalar()
@@ -57,50 +57,4 @@ def krum(gradients, net, lr, f = 0, byz = no_byz, factor = 0):
         if param.grad_req != 'null':
             # mapping back to the collection of ndarray
             param.set_data(param.data() - lr * krum_nd[idx:(idx+param.data().size)].reshape(param.data().shape))
-            idx += param.data().size
-
-def zeno(gradients, net, loss_fun, lr, sample, rho_ratio, b, f = 0, byz = no_byz, factor = 0):
-    # X is a 2d list of nd array
-    param_list = [nd.concat(*[xx.reshape((-1, 1)) for xx in x], dim=0) for x in gradients]
-
-    # param_net = []
-    # for param in net.collect_params().values():
-    #     if param.grad_req != 'null':
-    #         param_net.append(param.data().copy())
-    param_net = [xx.data().copy() for xx in net.collect_params().values()]
-
-    byz(param_list, f, factor)
-    output = net(sample[0])
-    loss_1_nd = loss_fun(output, sample[1])
-    # print(loss_1_nd.shape)
-    loss_1 = nd.mean(loss_1_nd).asscalar()
-    scores = []
-    rho = lr / rho_ratio
-    # rho = 0
-    for i in range(len(param_list)):
-        idx = 0
-        for j, param in enumerate(net.collect_params().values()):
-            if param.grad_req != 'null':
-                param.set_data(param_net[j] - lr * param_list[i][idx:(idx+param.data().size)].reshape(param.data().shape))
-                idx += param.data().size
-        output = net(sample[0])
-        loss_2_nd = loss_fun(output, sample[1])
-        loss_2 = nd.mean(loss_2_nd).asscalar()
-        scores.append(loss_1 - loss_2 - rho * param_list[i].square().mean().asscalar())
-    scores_np = np.array(scores)
-    scores_idx = np.argsort(scores_np)
-    # print(scores_np)
-    # print(scores_idx)
-    scores_idx = scores_idx[-(len(param_list)-b):].tolist()
-    g_aggregated = nd.zeros_like(param_list[0])
-    # print(scores_idx)
-    for idx in scores_idx:
-        g_aggregated += param_list[idx]
-    g_aggregated /= float(len(scores_idx))
-    
-    idx = 0
-    for j, (param) in enumerate(net.collect_params().values()):
-        if param.grad_req != 'null':
-            # mapping back to the collection of ndarray
-            param.set_data(param_net[j] - lr * g_aggregated[idx:(idx+param.data().size)].reshape(param.data().shape))
             idx += param.data().size
