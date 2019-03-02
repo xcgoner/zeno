@@ -6,19 +6,19 @@ def no_byz(v, f, factor):
 
 def median_attack(v, f, factor):
     v_correct = v[f:]
-    byz_v = -100 * nd.sum(nd.concat(*v_correct, dim=1), axis=-1)
+    byz_v = -100 * nd.sum(nd.concat(*v_correct, dim=1), axis=-1, keepdims=True)
     for i in range(f):
         v[i] = byz_v
 
 def krum_attack(v, f, factor):
     v_correct = v[f:]
-    byz_v = -1 * nd.sum(nd.concat(*v_correct, dim=1), axis=-1)
+    byz_v = -1 * nd.sum(nd.concat(*v_correct, dim=1), axis=-1, keepdims=True)
     for i in range(f):
         v[i] = byz_v
 
 def signflip_attack(v, f, factor):
     v_correct = v[f:]
-    byz_v = -factor * nd.sum(nd.concat(*v_correct, dim=1), axis=-1)
+    byz_v = -factor * nd.sum(nd.concat(*v_correct, dim=1), axis=-1, keepdims=True)
     for i in range(f):
         v[i] = byz_v
 
