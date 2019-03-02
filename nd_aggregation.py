@@ -13,7 +13,7 @@ def marginal_median(gradients, net, lr, f = 0, byz = no_byz, factor = 0):
     byz(param_list, f, factor)
     sorted_array = nd.sort(nd.concat(*param_list, dim=1), axis=-1)
     if sorted_array.shape[-1] % 2 == 1:
-        median_nd = sorted_array[:, sorted_array.shape[-1]/2]
+        median_nd = sorted_array[:, int((sorted_array.shape[-1]-1)/2)]
     else:
         median_nd = (sorted_array[:, (sorted_array.shape[-1]/2-1)] + sorted_array[:, (sorted_array.shape[-1]/2)]) / 2.
     # np_array = nd.concat(*param_list, dim=1).asnumpy()
