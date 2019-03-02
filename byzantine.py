@@ -1,4 +1,3 @@
-import bitflip
 import mxnet as mx
 from mxnet import nd
 
