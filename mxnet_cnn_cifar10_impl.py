@@ -27,7 +27,7 @@ parser.add_argument("--interval", help="log interval", type=int, default=5)
 args = parser.parse_args()
 
 import sys
-print(' '.join(sys.argv))
+print(' '.join(sys.argv), flush=True)
 
 if args.gpu == -1:
     ctx = mx.cpu()
@@ -179,7 +179,7 @@ with mx.gpu(args.gpu):
                 _, top5 = acc_top5.get()
                 _, crossentropy = train_cross_entropy.get()
 
-                print('[Epoch %d] validation: acc-top1=%f acc-top5=%f, loss=%f, epoch_time=%f, elapsed=%f' % (e, top1, top5, crossentropy, toc-tic, time.time()-time_0))
+                print('[Epoch %d] validation: acc-top1=%f acc-top5=%f, loss=%f, epoch_time=%f, elapsed=%f' % (e, top1, top5, crossentropy, toc-tic, time.time()-time_0), flush=True)
                 
                 # if itr >= num_itr:
                 #     break

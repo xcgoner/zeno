@@ -18,7 +18,7 @@ logfile=$logdir/byz_attack_${aggr}_baseline.log
 
 > $logfile
 
-stdbuf -o 0 python mxnet_cnn_cifar10_impl.py --gpu ${gpu} --nrepeats ${nrepeats} --nepochs 200 --lr 0.05 --batch_size 50 --nworkers 25 --nbyz 0 --byz_type no_byz --byz_factor 1 --byz_start 1000 --aggregation ${aggr} | tee ${logfile}
+stdbuf -o 0 python -u mxnet_cnn_cifar10_impl.py --gpu ${gpu} --nrepeats ${nrepeats} --nepochs 200 --lr 0.05 --batch_size 50 --nworkers 25 --nbyz 0 --byz_type no_byz --byz_factor 1 --byz_start 1000 --aggregation ${aggr} | tee ${logfile}
 
 
 
