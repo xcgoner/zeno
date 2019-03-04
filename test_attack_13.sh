@@ -14,9 +14,9 @@ nrepeats=2
 
 logdir=/home/nfs/cx2/src/byz_attack/results
 
-for byzstart in 50
+for byzstart in 100 150
 do
-    for byzfactor in 0.5
+    for byzfactor in 1 0.5
     do
         logfile=$logdir/byz_attack_${aggr}_${byzstart}_${byzfactor}.log
 

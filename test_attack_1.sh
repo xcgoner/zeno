@@ -2,7 +2,7 @@
 
 export MXNET_CUDNN_AUTOTUNE_DEFAULT=0
 
-export CUDA_VISIBLE_DEVICES=0,1,2
+export CUDA_VISIBLE_DEVICES=0,1,2,3
 
 
 
@@ -12,17 +12,17 @@ gpu=0
 aggr="krum"
 nrepeats=2
 
-logdir=/home/cx2/src/byz_attack/results
+logdir=/home/nfs/cx2/src/byz_attack/results
 
-for byzstart in 10 50 100 150
+for byzstart in 50
 do
-    for byzfactor in 10 5
+    for byzfactor in 5
     do
         logfile=$logdir/byz_attack_${aggr}_${byzstart}_${byzfactor}.log
 
         > $logfile
 
-        stdbuf -o 0 python mxnet_cnn_cifar10_impl.py --gpu ${gpu} --nrepeats ${nrepeats} --nepochs 200 --lr 0.05 --batch_size 50 --nworkers 25 --nbyz 11 --byz_type signflip --byz_factor ${byzfactor} --byz_start ${byzstart} --aggregation ${aggr} | tee ${logfile}
+        stdbuf -o 0 python -u mxnet_cnn_cifar10_impl.py --gpu ${gpu} --nrepeats ${nrepeats} --nepochs 200 --lr 0.05 --batch_size 50 --nworkers 25 --nbyz 11 --byz_type signflip --byz_factor ${byzfactor} --byz_start ${byzstart} --aggregation ${aggr} | tee ${logfile}
     done
 done
 
